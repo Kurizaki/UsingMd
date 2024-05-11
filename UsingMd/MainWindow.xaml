@@ -1,0 +1,102 @@
+﻿<Window x:Class="UsingMd.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Markdown Editor" Height="450" Width="800">
+    <Grid Background="#1E1E1E">
+        <!-- Dark background color similar to VSCode -->
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar -->
+        <Grid Grid.Column="0" Background="#252526" MinWidth="120">
+            <!-- VSCode sidebar background color -->
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- File Section -->
+            <StackPanel Grid.Row="0" Margin="0,10,0,0">
+                <Button x:Name="FileButton" Content="File" Click="ToggleFileSection" Padding="10" Background="#2C2C2C" Foreground="White" BorderThickness="0">
+                    <Button.Effect>
+                        <DropShadowEffect Color="Black" Direction="135" ShadowDepth="3" Opacity="0.5"/>
+                    </Button.Effect>
+                </Button>
+                <ListBox x:Name="FileListBox" Margin="10,0,0,0" Visibility="Collapsed" Background="#2C2C2C" BorderThickness="0" Foreground="White">
+                    <ListBoxItem>
+                        <TextBlock Text="New" MouseLeftButtonUp="NewFile_Click"/>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <TextBlock Text="Open" MouseLeftButtonUp="OpenFile_Click"/>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <TextBlock Text="Save" MouseLeftButtonUp="SaveFile_Click"/>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <TextBlock Text="Exit" MouseLeftButtonUp="Exit_Click"/>
+                    </ListBoxItem>
+                </ListBox>
+            </StackPanel>
+
+            <!-- Edit Section -->
+            <StackPanel Grid.Row="1" Margin="0,10,0,0">
+                <Button x:Name="EditButton" Content="Edit" Click="ToggleEditSection" Padding="10" Background="#2C2C2C" Foreground="White" BorderThickness="0">
+                    <Button.Effect>
+                        <DropShadowEffect Color="Black" Direction="135" ShadowDepth="3" Opacity="0.5"/>
+                    </Button.Effect>
+                </Button>
+                <ListBox x:Name="EditListBox" Margin="10,0,0,0" Visibility="Collapsed" Background="#2C2C2C" BorderThickness="0" Foreground="White">
+                    <ListBoxItem>
+                        <TextBlock Text="Undo" MouseLeftButtonUp="Undo_Click"/>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <TextBlock Text="Copy" MouseLeftButtonUp="Copy_Click"/>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <TextBlock Text="Cut" MouseLeftButtonUp="Cut_Click"/>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <TextBlock Text="Paste" MouseLeftButtonUp="Paste_Click"/>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <TextBlock Text="Delete" MouseLeftButtonUp="Delete_Click"/>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <TextBlock Text="Search and Replace" MouseLeftButtonUp="SearchAndReplace_Click"/>
+                    </ListBoxItem>
+                </ListBox>
+            </StackPanel>
+
+            <!-- View Section -->
+            <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                <Button x:Name="ViewButton" Content="View" Click="ToggleViewSection" Padding="10" Background="#2C2C2C" Foreground="White" BorderThickness="0">
+                    <Button.Effect>
+                        <DropShadowEffect Color="Black" Direction="135" ShadowDepth="3" Opacity="0.5"/>
+                    </Button.Effect>
+                </Button>
+                <ListBox x:Name="ViewListBox" Margin="10,0,0,0" Visibility="Collapsed" Background="#2C2C2C" BorderThickness="0" Foreground="White">
+                    <ListBoxItem>
+                        <TextBlock Text="Source Code Mode" MouseLeftButtonUp="SourceCodeMode_Click"/>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <TextBlock Text="UsingMd Mode" MouseLeftButtonUp="UsingMdMode_Click"/>
+                    </ListBoxItem>
+                </ListBox>
+            </StackPanel>
+        </Grid>
+
+        <!-- Main Content -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <WebBrowser x:Name="webBrowserPreview" Margin="10"/>
+            <TextBox x:Name="textBoxMarkdown" TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" TextChanged="TextBoxMarkdown_TextChanged"/>
+        </Grid>
+    </Grid>
+</Window>
