@@ -66,5 +66,3 @@ For feedback or suggestions, please feel free to [open an issue](https://github.
 ## Get Notified
 
 If you're interested in updates or want to report issues, click on the "Watch" button in the upper right corner of the GitHub repository to receive notifications.
-
-Reference Material: [Basic Writing and Formatting Syntax](https://docs.github.com/en/github/writing-on-github/basic-writing-and-formatting-syntax)
