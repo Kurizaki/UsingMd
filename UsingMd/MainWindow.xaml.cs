@@ -1,135 +1,206 @@
-﻿using System;
+﻿using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.Wpf;
+using System;
+using System.ComponentModel;
+using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using Microsoft.Win32;
+using Markdig;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
 
 namespace UsingMd
 {
     public partial class MainWindow : Window
     {
+        private bool isDocumentModified = false;
+        private int currentThemeIndex = 0;
+        private readonly string[] themeColors = { "Theme1Color", "Theme2Color", "Theme3Color", "Theme4Color", "Theme5Color", "Theme6Color" };
+        private readonly string[] cssBackgroundColors = { "#FFB3B3", "#FFE6E6", "#B3FFCC", "#E6FFEB", "#B3D9FF", "#E6F3FF" };
+        private readonly string[] cssTextColors = { "#2C3E50", "#34495E", "#16A085", "#27AE60", "#2980B9", "#8E44AD" };
+
         public MainWindow()
         {
             InitializeComponent();
+            InitializeWebView();
+            Closing += MainWindow_Closing;
         }
 
-        private void ToggleFileSection(object sender, RoutedEventArgs e)
+        private async void InitializeWebView()
         {
-            FileListBox.Visibility = FileListBox.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+            await webViewEditor.EnsureCoreWebView2Async();
+
+            string htmlFilePath = @"C:\Users\keanu\source\repos\UsingMd\UsingMd\initialContent.html";
+            if (!File.Exists(htmlFilePath))
+            {
+                MessageBox.Show("initialContent.html not found.");
+                return;
+            }
+
+            string htmlContent = File.ReadAllText(htmlFilePath);
+            webViewEditor.NavigateToString(htmlContent);
+
+            webViewEditor.CoreWebView2.WebMessageReceived += WebViewEditor_WebMessageReceived;
+            webViewEditor.CoreWebView2.DOMContentLoaded += WebViewEditor_DOMContentLoaded;
         }
 
-        private void ToggleEditSection(object sender, RoutedEventArgs e)
+
+
+        private void WebViewEditor_DOMContentLoaded(object? sender, CoreWebView2DOMContentLoadedEventArgs e)
         {
-            EditListBox.Visibility = EditListBox.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+            webViewEditor.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
         }
 
-        private void ToggleViewSection(object sender, RoutedEventArgs e)
+        private void WebViewEditor_WebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
         {
-            ViewListBox.Visibility = ViewListBox.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
-        }
-
-        private void TextBoxMarkdown_TextChanged(object sender, RoutedEventArgs e)
-        {
-            // Markdown editing logic
-            // For example, you can update the webBrowserPreview with the markdown content
-            UpdatePreview(textBoxMarkdown.Text);
+            string markdownText = e.TryGetWebMessageAsString();
+            markdownTextBox.Text = markdownText;
+            UpdatePreview(markdownText);
+            isDocumentModified = true;
         }
 
         private void UpdatePreview(string markdownText)
         {
-            // Here you can implement logic to update the preview
-            // For simplicity, let's just set the HTML content of the webBrowserPreview to the markdown text
             string htmlContent = ConvertMarkdownToHtml(markdownText);
-            webBrowserPreview.NavigateToString(htmlContent);
-        }
-
-        private string ConvertMarkdownToHtml(string markdownText)
-        {
-            // Here you can implement the actual conversion logic from markdown to HTML
-            // For demonstration purposes, let's just return the markdown text as HTML
-            // You may want to use a library like MarkdownSharp or Markdig for more advanced conversion
-            return $"<html><body>{markdownText}</body></html>";
-        }
-
-        private void NewFile_Click(object sender, RoutedEventArgs e)
-        {
-            // Logic for creating a new file
-            textBoxMarkdown.Text = string.Empty; // Clear the textbox
-        }
-
-        private void OpenFile_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Markdown Files (*.md)|*.md|All Files (*.*)|*.*";
-            if (openFileDialog.ShowDialog() == true)
+            if (string.IsNullOrWhiteSpace(htmlContent))
             {
-                string fileName = openFileDialog.FileName;
-                // Logic for opening the selected file
-                textBoxMarkdown.Text = System.IO.File.ReadAllText(fileName);
+                htmlContent = "<p>No content to display</p>";
+            }
+
+            webViewEditor.CoreWebView2.ExecuteScriptAsync($"document.body.innerHTML = `{htmlContent.Replace("`", "\\`")}`;");
+        }
+
+        private static string ConvertMarkdownToHtml(string markdownText)
+        {
+            if (string.IsNullOrWhiteSpace(markdownText))
+            {
+                return string.Empty;
+            }
+
+            var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+            return Markdown.ToHtml(markdownText, pipeline);
+        }
+
+        private void SaveFile_Click(object? sender, RoutedEventArgs? e)
+        {
+            var saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Markdown Files (*.md)|*.md|All Files (*.*)|*.*"
+            };
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                string fileName = saveFileDialog.FileName;
+                webViewEditor.CoreWebView2.ExecuteScriptAsync("document.body.innerText")
+                    .ContinueWith(t =>
+                    {
+                        string markdownText = t.Result.Trim('"');
+                        File.WriteAllText(fileName, markdownText);
+                        isDocumentModified = false;
+                    });
             }
         }
 
-        private void SaveFile_Click(object sender, RoutedEventArgs e)
+        private void OpenFile_Click(object? sender, RoutedEventArgs? e)
         {
-            // Logic for saving the file
-            // For simplicity, let's just show a message box indicating that the file has been saved
-            MessageBox.Show("File saved successfully.", "Save File", MessageBoxButton.OK, MessageBoxImage.Information);
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "Markdown Files (*.md)|*.md|All Files (*.*)|*.*"
+            };
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string fileName = openFileDialog.FileName;
+                string fileContent = File.ReadAllText(fileName);
+                markdownTextBox.Text = fileContent;
+                webViewEditor.CoreWebView2.ExecuteScriptAsync($"document.body.innerText = `{fileContent.Replace("\n", "\\n")}`;");
+                isDocumentModified = false;
+            }
         }
 
-        private void Exit_Click(object sender, RoutedEventArgs e)
+        private void InsertMarkdownSyntax(string syntax)
         {
-            // Logic for exiting the application
-            Application.Current.Shutdown();
+            webViewEditor.CoreWebView2.ExecuteScriptAsync($"document.execCommand('insertText', false, `{syntax}`);");
         }
 
-        private void Undo_Click(object sender, RoutedEventArgs e)
+        private void Bold_Click(object? sender, RoutedEventArgs? e) => InsertMarkdownSyntax("**Bold**");
+
+        private void Italic_Click(object? sender, RoutedEventArgs? e) => InsertMarkdownSyntax("*Italic*");
+
+        private void NewFile_Click(object? sender, RoutedEventArgs? e)
         {
-            // Logic for undoing the last action
-            // For simplicity, let's just clear the textbox
-            textBoxMarkdown.Undo();
+            markdownTextBox.Clear();
+            webViewEditor.CoreWebView2.ExecuteScriptAsync("document.body.innerText = '';");
+            isDocumentModified = true;
         }
 
-        private void Copy_Click(object sender, RoutedEventArgs e)
+        private void Copy_Click(object? sender, RoutedEventArgs? e) => webViewEditor.CoreWebView2.ExecuteScriptAsync("document.execCommand('copy');");
+
+        private void Cut_Click(object? sender, RoutedEventArgs? e) => webViewEditor.CoreWebView2.ExecuteScriptAsync("document.execCommand('cut');");
+
+        private void Paste_Click(object? sender, RoutedEventArgs? e) => webViewEditor.CoreWebView2.ExecuteScriptAsync("document.execCommand('paste');");
+
+        private void SourceCodeMode_Click(object? sender, RoutedEventArgs? e)
         {
-            // Logic for copying text
-            textBoxMarkdown.Copy();
+            webViewEditor.Visibility = Visibility.Collapsed;
+            markdownTextBox.Visibility = Visibility.Visible;
+            markdownTextBox.Text = markdownTextBox.Text.Trim();
         }
 
-        private void Cut_Click(object sender, RoutedEventArgs e)
+        private void UsingMdMode_Click(object? sender, RoutedEventArgs? e)
         {
-            // Logic for cutting text
-            textBoxMarkdown.Cut();
+            webViewEditor.Visibility = Visibility.Visible;
+            markdownTextBox.Visibility = Visibility.Collapsed;
+            string markdownText = markdownTextBox.Text;
+            UpdatePreview(markdownText);
         }
 
-        private void Paste_Click(object sender, RoutedEventArgs e)
+        private void MainWindow_Closing(object? sender, CancelEventArgs e)
         {
-            // Logic for pasting text
-            textBoxMarkdown.Paste();
+            if (isDocumentModified)
+            {
+                var result = MessageBox.Show("You have unsaved changes. Do you want to save before exiting?", "Unsaved Changes", MessageBoxButton.YesNoCancel);
+                if (result == MessageBoxResult.Yes)
+                {
+                    SaveFile_Click(sender, new RoutedEventArgs());
+                }
+                else if (result == MessageBoxResult.Cancel)
+                {
+                    e.Cancel = true;
+                }
+            }
         }
 
-        private void Delete_Click(object sender, RoutedEventArgs e)
+        private void ChangeTheme_Click(object sender, RoutedEventArgs e)
         {
-            // Logic for deleting selected text
-            textBoxMarkdown.SelectedText = string.Empty;
+            currentThemeIndex = (currentThemeIndex + 1) % themeColors.Length;
+            if (Resources[themeColors[currentThemeIndex]] is Color newColor)
+            {
+                Resources["BackgroundColor"] = new SolidColorBrush(newColor);
+                Resources["WebViewBackgroundColor"] = new SolidColorBrush((Color)Resources[themeColors[(currentThemeIndex + 1) % themeColors.Length]]);
+                Resources["DarkBackgroundBrush"] = new SolidColorBrush((Color)Resources[themeColors[(currentThemeIndex + 2) % themeColors.Length]]);
+                Resources["ForegroundColor"] = new SolidColorBrush((Color)Resources[cssTextColors[currentThemeIndex]]);
+
+                string cssBackgroundColor = cssBackgroundColors[currentThemeIndex];
+                string cssTextColor = cssTextColors[currentThemeIndex];
+                webViewEditor.CoreWebView2.ExecuteScriptAsync($"document.body.style.setProperty('--background-color', '{cssBackgroundColor}'); document.body.style.setProperty('--color', '{cssTextColor}');");
+            }
         }
 
-        private void SearchAndReplace_Click(object sender, RoutedEventArgs e)
+        private void ToggleMenu_Click(object sender, RoutedEventArgs e)
         {
-            // Logic for searching and replacing text
-            // For simplicity, let's just show a message box
-            MessageBox.Show("Searching and replacing text...", "Search and Replace", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (sender is Button button)
+            {
+                var menuName = button.Content + "Menu";
+                if (FindName(menuName) is Popup popup)
+                {
+                    popup.IsOpen = !popup.IsOpen;
+                }
+            }
         }
 
-        private void SourceCodeMode_Click(object sender, RoutedEventArgs e)
+        private void About_Click(object sender, RoutedEventArgs e)
         {
-            // Logic for switching to source code mode
-            // For simplicity, let's just show a message box
-            MessageBox.Show("Switching to Source Code Mode...", "View", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void UsingMdMode_Click(object sender, RoutedEventArgs e)
-        {
-            // Logic for switching to UsingMd mode
-            // For simplicity, let's just show a message box
-            MessageBox.Show("Switching to UsingMd Mode...", "View", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Markdown Editor\nVersion 1.0\nDeveloped by YourName", "About");
         }
     }
 }
