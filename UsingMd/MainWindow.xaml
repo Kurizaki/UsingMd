@@ -4,26 +4,6 @@
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="Markdown Editor" Height="600" Width="800" Background="{DynamicResource DarkBackgroundBrush}">
     <Window.Resources>
-        <!-- Define pastel color themes -->
-        <Color x:Key="Theme1Color">#FFB3B3</Color>
-        <Color x:Key="Theme2Color">#FFE6E6</Color>
-        <Color x:Key="Theme3Color">#B3FFCC</Color>
-        <Color x:Key="Theme4Color">#E6FFEB</Color>
-        <Color x:Key="Theme5Color">#B3D9FF</Color>
-        <Color x:Key="Theme6Color">#E6F3FF</Color>
-        <Color x:Key="DarkBackgroundColor">#A6A6A6</Color>
-
-        <!-- Define dynamic resources for colors -->
-        <SolidColorBrush x:Key="BackgroundColor" Color="{DynamicResource Theme1Color}"/>
-        <SolidColorBrush x:Key="WebViewBackgroundColor" Color="{DynamicResource Theme2Color}"/>
-        <SolidColorBrush x:Key="DarkBackgroundBrush" Color="{DynamicResource DarkBackgroundColor}"/>
-        <SolidColorBrush x:Key="TextColor" Color="#2C3E50"/>
-        <SolidColorBrush x:Key="ButtonBackgroundColor" Color="#0000"/>
-        <SolidColorBrush x:Key="ButtonHoverBackgroundColor" Color="#2980B9"/>
-        <SolidColorBrush x:Key="MenuBackgroundColor" Color="#0000"/>
-        <SolidColorBrush x:Key="MenuBorderColor" Color="#95A5A6"/>
-
-        <!-- Define button style -->
         <Style x:Key="BaseButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{DynamicResource ButtonBackgroundColor}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
@@ -48,13 +28,12 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource ButtonHoverBackgroundColor}"/>
+                    <Setter Property="TextBlock.TextDecorations" Value="Underline"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
-        <!-- Define the shadow effect -->
-        <DropShadowEffect x:Key="ShadowEffect" Color="Black" Direction="320" ShadowDepth="5" Opacity="0.5" BlurRadius="10"/>
+        <DropShadowEffect x:Key="ShadowEffect" Color="Black" Direction="315" ShadowDepth="5" Opacity="0.5" BlurRadius="10"/>
     </Window.Resources>
 
     <Grid>
@@ -63,27 +42,24 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Main Content -->
         <Grid Grid.Column="1" Margin="10,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Menu Container -->
-            <Grid x:Name="MenuContainer">
-                <!-- Menu Bar -->
+            <Grid x:Name="MenuContainer" Margin="10,0,10,0">
                 <StackPanel Orientation="Horizontal" Margin="0,10,0,10" Background="{DynamicResource MenuBackgroundColor}">
-                    <Button Content="File" Style="{StaticResource BaseButtonStyle}" Tag="Icons/file.png" Click="ToggleMenu_Click" ToolTip="File operations"/>
-                    <Popup x:Name="FileMenu" Placement="Bottom" StaysOpen="False">
+                    <Button x:Name="FileButton" Content="File" Style="{StaticResource BaseButtonStyle}" Tag="Icons/file.png" Click="ToggleMenu_Click" ToolTip="File operations"/>
+                    <Popup x:Name="FileMenu" PlacementTarget="{Binding ElementName=FileButton}" Placement="Custom" CustomPopupPlacementCallback="FileMenu_CustomPopupPlacementCallback" StaysOpen="False">
                         <StackPanel Background="{DynamicResource MenuBackgroundColor}">
                             <Button Content="New (Ctrl+N)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/new.png" Click="NewFile_Click"/>
                             <Button Content="Open File (Ctrl+O)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/open.png" Click="OpenFile_Click"/>
                             <Button Content="Save (Ctrl+S)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/save.png" Click="SaveFile_Click"/>
                         </StackPanel>
                     </Popup>
-                    <Button Content="Edit" Style="{StaticResource BaseButtonStyle}" Tag="Icons/edit.png" Click="ToggleMenu_Click" ToolTip="Edit operations"/>
-                    <Popup x:Name="EditMenu" Placement="Bottom" StaysOpen="False">
+                    <Button x:Name="EditButton" Content="Edit" Style="{StaticResource BaseButtonStyle}" Tag="Icons/edit.png" Click="ToggleMenu_Click" ToolTip="Edit operations"/>
+                    <Popup x:Name="EditMenu" PlacementTarget="{Binding ElementName=EditButton}" Placement="Custom" CustomPopupPlacementCallback="EditMenu_CustomPopupPlacementCallback" StaysOpen="False">
                         <StackPanel Background="{DynamicResource MenuBackgroundColor}">
                             <Button Content="Bold (Ctrl+B)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/bold.png" Click="Bold_Click"/>
                             <Button Content="Italic (Ctrl+I)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/italic.png" Click="Italic_Click"/>
@@ -92,16 +68,16 @@
                             <Button Content="Paste (Ctrl+V)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/paste.png" Click="Paste_Click"/>
                         </StackPanel>
                     </Popup>
-                    <Button Content="View" Style="{StaticResource BaseButtonStyle}" Tag="Icons/view.png" Click="ToggleMenu_Click" ToolTip="View options"/>
-                    <Popup x:Name="ViewMenu" Placement="Bottom" StaysOpen="False">
+                    <Button x:Name="ViewButton" Content="View" Style="{StaticResource BaseButtonStyle}" Tag="Icons/view.png" Click="ToggleMenu_Click" ToolTip="View options"/>
+                    <Popup x:Name="ViewMenu" PlacementTarget="{Binding ElementName=ViewButton}" Placement="Custom" CustomPopupPlacementCallback="ViewMenu_CustomPopupPlacementCallback" StaysOpen="False">
                         <StackPanel Background="{DynamicResource MenuBackgroundColor}">
                             <Button Content="Source Code Mode (Ctrl+1)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/source.png" Click="SourceCodeMode_Click"/>
                             <Button Content="UsingMd Mode (Ctrl+2)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/preview.png" Click="UsingMdMode_Click"/>
                             <Button Content="Change Theme" Style="{StaticResource BaseButtonStyle}" Tag="Icons/theme.png" Click="ChangeTheme_Click"/>
                         </StackPanel>
                     </Popup>
-                    <Button Content="Help" Style="{StaticResource BaseButtonStyle}" Tag="Icons/help.png" Click="ToggleMenu_Click" ToolTip="Help and about"/>
-                    <Popup x:Name="HelpMenu" Placement="Bottom" StaysOpen="False">
+                    <Button x:Name="HelpButton" Content="Help" Style="{StaticResource BaseButtonStyle}" Tag="Icons/help.png" Click="ToggleMenu_Click" ToolTip="Help and about"/>
+                    <Popup x:Name="HelpMenu" PlacementTarget="{Binding ElementName=HelpButton}" Placement="Custom" CustomPopupPlacementCallback="HelpMenu_CustomPopupPlacementCallback" StaysOpen="False">
                         <StackPanel Background="{DynamicResource MenuBackgroundColor}">
                             <Button Content="About" Style="{StaticResource BaseButtonStyle}" Tag="Icons/about.png" Click="About_Click"/>
                         </StackPanel>
@@ -109,13 +85,12 @@
                 </StackPanel>
             </Grid>
 
-            <!-- Editor and Preview -->
-            <Grid Grid.Row="1" Background="{DynamicResource DarkBackgroundBrush}">
-                <Border Background="{DynamicResource DarkBackgroundBrush}" Margin="20,0" Padding="20" CornerRadius="5" Effect="{StaticResource ShadowEffect}">
-                    <wv2:WebView2 x:Name="webViewEditor" Source="about:blank"/>
+            <Grid Grid.Row="1" Background="{DynamicResource DarkBackgroundBrush}" >
+                <Border Background="{DynamicResource DarkBackgroundBrush}" Margin="35,10,34,20" Padding="20" CornerRadius="5" Effect="{StaticResource ShadowEffect}">
+                    <wv2:WebView2 x:Name="webViewEditor" Source="about:blank" />
                 </Border>
-                <Border Background="{DynamicResource BackgroundColor}" Margin="20,0" Padding="20" CornerRadius="5">
-                    <TextBox x:Name="markdownTextBox" Visibility="Collapsed" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource TextColor}" BorderThickness="0"/>
+                <Border Background="{DynamicResource BackgroundColor}" Margin="35,10,35,20" Padding="20" CornerRadius="5">
+                    <TextBox x:Name="markdownTextBox" Visibility="Collapsed" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource TextColor}" BorderThickness="0"/>
                 </Border>
             </Grid>
         </Grid>
