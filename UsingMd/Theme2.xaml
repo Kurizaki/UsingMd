@@ -1,0 +1,6 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="BackgroundColor" Color="#FFB3FFCC"/>
+    <SolidColorBrush x:Key="TextColor" Color="#FF2C3E50"/>
+    <Color x:Key="WebViewBackgroundColor">#FFB3FFCC</Color>
+</ResourceDictionary>

@@ -1,14 +1,14 @@
-﻿using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.Wpf;
+﻿using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
+using Microsoft.Web.WebView2.Core;
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Windows;
-using System.Windows.Controls;
 using Microsoft.Win32;
 using Markdig;
-using System.Windows.Controls.Primitives;
-using System.Windows.Media;
+using System.Threading.Tasks;
 
 namespace UsingMd
 {
@@ -16,9 +16,9 @@ namespace UsingMd
     {
         private bool isDocumentModified = false;
         private int currentThemeIndex = 0;
-        private readonly string[] themeColors = { "Theme1Color", "Theme2Color", "Theme3Color", "Theme4Color", "Theme5Color", "Theme6Color" };
-        private readonly string[] cssBackgroundColors = { "#FFB3B3", "#FFE6E6", "#B3FFCC", "#E6FFEB", "#B3D9FF", "#E6F3FF" };
-        private readonly string[] cssTextColors = { "#2C3E50", "#34495E", "#16A085", "#27AE60", "#2980B9", "#8E44AD" };
+        private readonly string[] themes = { "Theme1.xaml", "Theme2.xaml", "Theme3.xaml" };
+        private bool isLightMode = true;
+        private string currentMarkdownText = string.Empty;
 
         public MainWindow()
         {
@@ -26,163 +26,123 @@ namespace UsingMd
             InitializeWebView();
             this.Loaded += MainWindow_Loaded;
             Closing += MainWindow_Closing;
-            markdownTextBox.TextChanged += MarkdownTextBox_TextChanged;
-        }
-
-        private void MarkdownTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            string markdownText = markdownTextBox.Text;
-            UpdatePreview(markdownText);
-            isDocumentModified = true;
-        }
-
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            try
+            markdownTextBox.TextChanged += (s, e) =>
             {
-                if (Application.Current.Resources["WebViewBackgroundColor"] is Color webViewBackgroundColor)
-                {
-                    webViewEditor.DefaultBackgroundColor = System.Drawing.Color.FromArgb(webViewBackgroundColor.A, webViewBackgroundColor.R, webViewBackgroundColor.G, webViewBackgroundColor.B);
-                }
-                else
-                {
-                    MessageBox.Show("WebViewBackgroundColor resource not found or is not a Color.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+                currentMarkdownText = markdownTextBox.Text;
+                UpdatePreview(currentMarkdownText);
+                isDocumentModified = true;
+            };
         }
 
         private async void InitializeWebView()
         {
-            await webViewEditor.EnsureCoreWebView2Async();
-            string htmlFilePath = @"C:\Users\keanu\source\repos\UsingMd\UsingMd\initialContent.html";
-            if (!File.Exists(htmlFilePath))
+            try
             {
-                MessageBox.Show("initialContent.html not found.");
-                return;
+                await webViewEditor.EnsureCoreWebView2Async();
+                string htmlFilePath = @"C:\Users\keanu\source\repos\UsingMd\UsingMd\initialContent.html";
+                if (File.Exists(htmlFilePath))
+                {
+                    webViewEditor.NavigateToString(File.ReadAllText(htmlFilePath));
+                }
+                webViewEditor.CoreWebView2InitializationCompleted += WebViewEditor_CoreWebView2InitializationCompleted;
             }
-
-            string htmlContent = File.ReadAllText(htmlFilePath);
-            webViewEditor.NavigateToString(htmlContent);
-            webViewEditor.CoreWebView2.WebMessageReceived += WebViewEditor_WebMessageReceived;
-            webViewEditor.CoreWebView2.DOMContentLoaded += WebViewEditor_DOMContentLoaded;
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing WebView2: {ex.Message}");
+            }
         }
 
-        private void WebViewEditor_DOMContentLoaded(object sender, CoreWebView2DOMContentLoadedEventArgs e)
+        private void WebViewEditor_CoreWebView2InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
         {
-            webViewEditor.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+            if (e.IsSuccess)
+            {
+                webViewEditor.CoreWebView2.WebMessageReceived += (s, e) =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        markdownTextBox.Text = e.TryGetWebMessageAsString();
+                        isDocumentModified = true;
+                    });
+                };
+
+                // Now it's safe to call UpdateWebViewTheme
+                UpdateWebViewTheme();
+            }
+            else
+            {
+                MessageBox.Show($"WebView2 initialization failed: {e.InitializationException.Message}");
+            }
         }
 
-        private void WebViewEditor_WebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            string markdownText = e.TryGetWebMessageAsString();
-            markdownTextBox.Text = markdownText;
-            UpdatePreview(markdownText);
-            isDocumentModified = true;
+            if (Application.Current.Resources["WebViewBackgroundColor"] is Color webViewBackgroundColor)
+            {
+                webViewEditor.DefaultBackgroundColor = System.Drawing.Color.FromArgb(webViewBackgroundColor.A, webViewBackgroundColor.R, webViewBackgroundColor.G, webViewBackgroundColor.B);
+            }
         }
 
         private void UpdatePreview(string markdownText)
         {
-            string htmlContent = ConvertMarkdownToHtml(markdownText);
-            if (string.IsNullOrWhiteSpace(htmlContent))
+            if (!string.IsNullOrEmpty(markdownText))
             {
-                htmlContent = "<p>No content to display</p>";
+                Dispatcher.Invoke(() =>
+                {
+                    string htmlContent = ConvertMarkdownToHtml(markdownText);
+                    string script = $@"
+                        document.body.innerHTML = `<div contenteditable='true' id='editor'>{htmlContent.Replace("`", "\\`")}</div>`;
+                        var script = document.createElement('script');
+                        script.src = 'editor.js';
+                        document.body.appendChild(script);";
+                    webViewEditor.CoreWebView2.ExecuteScriptAsync(script);
+                });
             }
-
-            string cssBackgroundColor = cssBackgroundColors[currentThemeIndex];
-            string cssTextColor = cssTextColors[currentThemeIndex];
-            string script = $@"
-        document.body.innerHTML = `<div contenteditable='true' id='editor'>{htmlContent.Replace("`", "\\`")}</div>`;
-        document.body.style.setProperty('--background-color', '{cssBackgroundColor}');
-        document.body.style.setProperty('--color', '{cssTextColor}');
-        document.body.style.backgroundColor = '{cssBackgroundColor}';
-        document.body.style.color = '{cssTextColor}';
-
-        var tables = document.getElementsByTagName('table');
-        for (var i = 0; i < tables.length; i++) {{
-            tables[i].style.borderCollapse = 'collapse';
-            tables[i].style.width = '100%';
-            tables[i].style.border = '1px solid #ddd';
-        }}
-        var thtd = document.querySelectorAll('th, td');
-        for (var i = 0; i < thtd.length; i++) {{
-            thtd[i].style.border = '1px solid #ddd';
-            thtd[i].style.padding = '8px';
-            thtd[i].style.textAlign = 'left';
-        }}
-        var th = document.getElementsByTagName('th');
-        for (var i = 0; i < th.length; i++) {{
-            th[i].style.backgroundColor = '#f2f2f2';
-        }}
-    ";
-
-            webViewEditor.CoreWebView2.ExecuteScriptAsync(script);
         }
 
-        private static string ConvertMarkdownToHtml(string markdownText)
-        {
-            if (string.IsNullOrWhiteSpace(markdownText))
-            {
-                return string.Empty;
-            }
-
-            var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-            return Markdown.ToHtml(markdownText, pipeline);
-        }
+        private static string ConvertMarkdownToHtml(string markdownText) => Markdown.ToHtml(markdownText, new MarkdownPipelineBuilder().UseAdvancedExtensions().Build());
 
         private void SaveFile_Click(object sender, RoutedEventArgs e)
         {
-            var saveFileDialog = new SaveFileDialog
-            {
-                Filter = "Markdown Files (*.md)|*.md|All Files (*.*)|*.*"
-            };
+            var saveFileDialog = new SaveFileDialog { Filter = "Markdown Files (*.md)|*.md|All Files (*.*)|*.*" };
             if (saveFileDialog.ShowDialog() == true)
             {
-                string fileName = saveFileDialog.FileName;
-                webViewEditor.CoreWebView2.ExecuteScriptAsync("document.getElementById('editor').innerText")
-                    .ContinueWith(t =>
+                webViewEditor.CoreWebView2.ExecuteScriptAsync("document.getElementById('editor').innerText").ContinueWith(t =>
+                {
+                    Dispatcher.Invoke(() =>
                     {
-                        string markdownText = t.Result.Trim('"');
-                        File.WriteAllText(fileName, markdownText);
+                        File.WriteAllText(saveFileDialog.FileName, t.Result.Trim('"'));
                         isDocumentModified = false;
                     });
+                });
             }
         }
 
         private void OpenFile_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog
-            {
-                Filter = "Markdown Files (*.md)|*.md|All Files (*.*)|*.*"
-            };
+            var openFileDialog = new OpenFileDialog { Filter = "Markdown Files (*.md)|*.md|All Files (*.*)|*.*" };
             if (openFileDialog.ShowDialog() == true)
             {
-                string fileName = openFileDialog.FileName;
-                string fileContent = File.ReadAllText(fileName);
+                string fileContent = File.ReadAllText(openFileDialog.FileName);
                 markdownTextBox.Text = fileContent;
+                currentMarkdownText = fileContent; // Update the current markdown text
                 webViewEditor.CoreWebView2.ExecuteScriptAsync($"document.getElementById('editor').innerText = `{fileContent.Replace("\n", "\\n")}`;");
                 isDocumentModified = false;
             }
         }
 
-        private void InsertMarkdownSyntax(string syntax)
+        private void InsertMarkdownSyntax(string syntax) => webViewEditor.CoreWebView2.ExecuteScriptAsync($"document.execCommand('insertText', false, `{syntax}`);");
+
+        private void NewFile_Click(object sender, RoutedEventArgs e)
         {
-            webViewEditor.CoreWebView2.ExecuteScriptAsync($"document.execCommand('insertText', false, `{syntax}`);");
+            markdownTextBox.Clear();
+            currentMarkdownText = string.Empty; // Clear the current markdown text
+            webViewEditor.CoreWebView2.ExecuteScriptAsync("document.getElementById('editor').innerText = '';");
+            isDocumentModified = true;
         }
 
         private void Bold_Click(object sender, RoutedEventArgs e) => InsertMarkdownSyntax("**Bold**");
 
         private void Italic_Click(object sender, RoutedEventArgs e) => InsertMarkdownSyntax("*Italic*");
-
-        private void NewFile_Click(object sender, RoutedEventArgs e)
-        {
-            markdownTextBox.Clear();
-            webViewEditor.CoreWebView2.ExecuteScriptAsync("document.getElementById('editor').innerText = '';");
-            isDocumentModified = true;
-        }
 
         private void Copy_Click(object sender, RoutedEventArgs e) => webViewEditor.CoreWebView2.ExecuteScriptAsync("document.execCommand('copy');");
 
@@ -194,15 +154,13 @@ namespace UsingMd
         {
             webViewEditor.Visibility = Visibility.Collapsed;
             markdownTextBox.Visibility = Visibility.Visible;
-            markdownTextBox.Text = markdownTextBox.Text.Trim();
         }
 
-        private void UsingMdMode_Click(object sender, RoutedEventArgs e)
+        private void MarkdownMode_Click(object sender, RoutedEventArgs e)
         {
             webViewEditor.Visibility = Visibility.Visible;
             markdownTextBox.Visibility = Visibility.Collapsed;
-            string markdownText = markdownTextBox.Text;
-            UpdatePreview(markdownText);
+            UpdatePreview(markdownTextBox.Text);
         }
 
         private void MainWindow_Closing(object sender, CancelEventArgs e)
@@ -223,81 +181,147 @@ namespace UsingMd
 
         private void ChangeTheme_Click(object sender, RoutedEventArgs e)
         {
-            currentThemeIndex = (currentThemeIndex + 1) % themeColors.Length;
-            if (Resources[themeColors[currentThemeIndex]] is Color newColor)
-            {
-                Resources["BackgroundColor"] = new SolidColorBrush(newColor);
-                Resources["WebViewBackgroundColor"] = new SolidColorBrush(newColor);
-                Resources["DarkBackgroundBrush"] = new SolidColorBrush((Color)Resources[themeColors[(currentThemeIndex + 2) % themeColors.Length]]);
-                Resources["ForegroundColor"] = new SolidColorBrush((Color)Resources[cssTextColors[currentThemeIndex]]);
+            // Store the current Markdown content
+            StoreCurrentMarkdown();
 
-                string cssBackgroundColor = cssBackgroundColors[currentThemeIndex];
-                string cssTextColor = cssTextColors[currentThemeIndex];
+            // Cycle through themes
+            currentThemeIndex = (currentThemeIndex + 1) % themes.Length;
+            var newTheme = themes[currentThemeIndex];
+
+            var newThemeDict = new ResourceDictionary { Source = new Uri(newTheme, UriKind.Relative) };
+
+            // Remove the current theme dictionary and add the new one
+            var dictionaries = Application.Current.Resources.MergedDictionaries;
+            var modeDict = dictionaries[1]; // Keep the mode dictionary
+            dictionaries.Clear();
+            dictionaries.Add(newThemeDict);
+            dictionaries.Add(modeDict);
+
+            // Update WebView background color if defined in the new theme
+            if (Application.Current.Resources["WebViewBackgroundColor"] is Color webViewBackgroundColor)
+            {
+                webViewEditor.DefaultBackgroundColor = System.Drawing.Color.FromArgb(webViewBackgroundColor.A, webViewBackgroundColor.R, webViewBackgroundColor.G, webViewBackgroundColor.B);
+            }
+
+            // Ensure WebView is initialized before updating theme
+            Dispatcher.Invoke(() =>
+            {
+                if (webViewEditor.CoreWebView2 != null)
+                {
+                    UpdateWebViewTheme();
+                }
+            });
+        }
+
+        private void ChangeMode_Click(object sender, RoutedEventArgs e)
+        {
+            // Store the current Markdown content
+            StoreCurrentMarkdown();
+
+            // Toggle between light and dark modes
+            isLightMode = !isLightMode;
+            var newMode = isLightMode ? "LightMode.xaml" : "DarkMode.xaml";
+
+            var newModeDict = new ResourceDictionary { Source = new Uri(newMode, UriKind.Relative) };
+
+            // Remove the current mode dictionary and add the new one
+            var dictionaries = Application.Current.Resources.MergedDictionaries;
+            var themeDict = dictionaries[0]; // Keep the theme dictionary
+            dictionaries.Clear();
+            dictionaries.Add(themeDict);
+            dictionaries.Add(newModeDict);
+
+            // Update WebView background color if defined in the new mode
+            if (Application.Current.Resources["WebViewBackgroundColor"] is Color webViewBackgroundColor)
+            {
+                webViewEditor.DefaultBackgroundColor = System.Drawing.Color.FromArgb(webViewBackgroundColor.A, webViewBackgroundColor.R, webViewBackgroundColor.G, webViewBackgroundColor.B);
+            }
+
+            // Ensure WebView is initialized before updating mode
+            Dispatcher.Invoke(() =>
+            {
+                if (webViewEditor.CoreWebView2 != null)
+                {
+                    // No need to update WebViewTheme here since we're only changing the mode
+                    ReloadMarkdownContent();
+                }
+            });
+        }
+
+        private void StoreCurrentMarkdown()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (webViewEditor.CoreWebView2 != null)
+                {
+                    webViewEditor.CoreWebView2.ExecuteScriptAsync("document.getElementById('editor').innerText").ContinueWith(t =>
+                    {
+                        currentMarkdownText = t.Result.Trim('"');
+                    });
+                }
+            });
+        }
+
+        private void ReloadMarkdownContent()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (webViewEditor.CoreWebView2 != null)
+                {
+                    UpdatePreview(currentMarkdownText);
+                }
+            });
+        }
+
+        private void UpdateWebViewTheme()
+        {
+            if (Application.Current.Resources["BackgroundColor"] is SolidColorBrush backgroundColorBrush &&
+                Application.Current.Resources["TextColor"] is SolidColorBrush textColorBrush)
+            {
+                string backgroundColor = ColorToHex(backgroundColorBrush.Color);
+                string textColor = ColorToHex(textColorBrush.Color);
+
                 string script = $@"
-                    document.body.style.setProperty('--background-color', '{cssBackgroundColor}');
-                    document.body.style.setProperty('--color', '{cssTextColor}');
-                    document.body.style.backgroundColor = '{cssBackgroundColor}';
-                    document.body.style.color = '{cssTextColor}';
+                    document.documentElement.style.setProperty('--background-color', '{backgroundColor}');
+                    document.documentElement.style.setProperty('--color', '{textColor}');
                 ";
 
-                webViewEditor.CoreWebView2.ExecuteScriptAsync(script);
+                webViewEditor.CoreWebView2.ExecuteScriptAsync(script).ContinueWith(t =>
+                {
+                    // Reapply the stored Markdown content
+                    ReloadMarkdownContent();
+                });
             }
         }
 
-        private CustomPopupPlacement[] FileMenu_CustomPopupPlacementCallback(Size popupSize, Size targetSize, Point offset)
+        private static string ColorToHex(Color color)
         {
-            double horizontalOffset = -6;
-            var belowAndAligned = new CustomPopupPlacement(new Point(horizontalOffset, targetSize.Height), PopupPrimaryAxis.Horizontal);
-            return new[] { belowAndAligned };
-        }
-
-        private CustomPopupPlacement[] EditMenu_CustomPopupPlacementCallback(Size popupSize, Size targetSize, Point offset)
-        {
-            double horizontalOffset = -6;
-            var belowAndAligned = new CustomPopupPlacement(new Point(horizontalOffset, targetSize.Height), PopupPrimaryAxis.Horizontal);
-            return new[] { belowAndAligned };
-        }
-
-        private CustomPopupPlacement[] ViewMenu_CustomPopupPlacementCallback(Size popupSize, Size targetSize, Point offset)
-        {
-            double horizontalOffset = -6;
-            var belowAndAligned = new CustomPopupPlacement(new Point(horizontalOffset, targetSize.Height), PopupPrimaryAxis.Horizontal);
-            return new[] { belowAndAligned };
-        }
-
-        private CustomPopupPlacement[] HelpMenu_CustomPopupPlacementCallback(Size popupSize, Size targetSize, Point offset)
-        {
-            double horizontalOffset = -6;
-            var belowAndAligned = new CustomPopupPlacement(new Point(horizontalOffset, targetSize.Height), PopupPrimaryAxis.Horizontal);
-            return new[] { belowAndAligned };
+            return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
         }
 
         private void ToggleMenu_Click(object sender, RoutedEventArgs e)
         {
-            Button button = sender as Button;
-            if (button != null)
+            if (sender is Button button)
             {
                 switch (button.Name)
                 {
-                    case "FileButton":
-                        FileMenu.IsOpen = !FileMenu.IsOpen;
-                        break;
-                    case "EditButton":
-                        EditMenu.IsOpen = !EditMenu.IsOpen;
-                        break;
-                    case "ViewButton":
-                        ViewMenu.IsOpen = !ViewMenu.IsOpen;
-                        break;
-                    case "HelpButton":
-                        HelpMenu.IsOpen = !HelpMenu.IsOpen;
-                        break;
+                    case "FileButton": FileMenu.IsOpen = !FileMenu.IsOpen; break;
+                    case "EditButton": EditMenu.IsOpen = !EditMenu.IsOpen; break;
+                    case "ViewButton": ViewMenu.IsOpen = !ViewMenu.IsOpen; break;
+                    case "HelpButton": HelpMenu.IsOpen = !HelpMenu.IsOpen; break;
                 }
             }
         }
 
-        private void About_Click(object sender, RoutedEventArgs e)
+        private void About_Click(object sender, RoutedEventArgs e) => MessageBox.Show("Markdown Editor\nVersion 1.0\nDeveloped by Kurizaki", "About");
+
+        private CustomPopupPlacement[] PopupPlacementCallback(Size popupSize, Size targetSize, Point offset)
         {
-            MessageBox.Show("Markdown Editor\nVersion 1.0\nDeveloped by Kurizaki", "About");
+            return new CustomPopupPlacement[]
+            {
+                new CustomPopupPlacement(new Point(0, targetSize.Height), PopupPrimaryAxis.Horizontal),
+                new CustomPopupPlacement(new Point(targetSize.Width, targetSize.Height), PopupPrimaryAxis.Horizontal)
+            };
         }
     }
 }

@@ -16,9 +16,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="styles.css">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <Page Update="DarkMode.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </Page>
+    <Page Update="LightMode.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </Page>
+    <Page Update="Theme1.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </Page>
+    <Page Update="Theme2.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </Page>
+    <Page Update="Theme3.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </Page>
   </ItemGroup>
 
 </Project>
