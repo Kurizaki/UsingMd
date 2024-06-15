@@ -7,19 +7,7 @@
                 const cell = cells[j];
                 cell.setAttribute('contenteditable', 'true');
                 cell.addEventListener('input', updateMarkdown);
-                if (i === 0) {
-                    const addColumnButton = document.createElement('button');
-                    addColumnButton.textContent = '+';
-                    addColumnButton.style.marginLeft = '5px';
-                    addColumnButton.addEventListener('click', () => addColumn(table, j));
-                    cell.appendChild(addColumnButton);
-                }
             }
-            const addRowButton = document.createElement('button');
-            addRowButton.textContent = '+';
-            addRowButton.style.marginLeft = '5px';
-            addRowButton.addEventListener('click', () => addRow(table, i));
-            rows[i].appendChild(addRowButton);
         }
     }
 

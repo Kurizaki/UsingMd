@@ -9,6 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="initialContent.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="initialContent.html">
+      <CustomToolNamespace>UsingMd</CustomToolNamespace>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Markdig" Version="0.37.0" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2478.35" />
     <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />

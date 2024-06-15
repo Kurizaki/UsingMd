@@ -11,15 +11,13 @@
             <Setter Property="Margin" Value="5"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
-                            <StackPanel Orientation="Horizontal">
-                                <Image Source="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" Width="16" Height="16" Margin="0,0,5,0"/>
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </StackPanel>
+                        <Border Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -30,7 +28,7 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-        <DropShadowEffect x:Key="ShadowEffect" Color="Black" Direction="315" ShadowDepth="5" Opacity="0.5" BlurRadius="10"/>
+        <DropShadowEffect x:Key="ShadowEffect" Color="Black" Direction="315" ShadowDepth="3" Opacity="0.3" BlurRadius="8"/>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -42,39 +40,39 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="1" Grid.Row="0" Margin="10,0,0,0">
-            <StackPanel Orientation="Horizontal" Margin="0,10,0,10" Background="{DynamicResource DarkBackground}">
-                <Button x:Name="FileButton" Content="File" Style="{StaticResource BaseButtonStyle}" Tag="Icons/file.png" Click="ToggleMenu_Click" ToolTip="File operations"/>
+        <Grid Grid.Column="1" Grid.Row="0" Margin="10,10,0,0">
+            <StackPanel Orientation="Horizontal" Margin="50,10" Background="{DynamicResource DarkBackground}">
+                <Button x:Name="FileButton" Content="File" Style="{StaticResource BaseButtonStyle}" Click="ToggleMenu_Click" ToolTip="File operations"/>
                 <Popup x:Name="FileMenu" PlacementTarget="{Binding ElementName=FileButton}" Placement="Custom" CustomPopupPlacementCallback="PopupPlacementCallback" StaysOpen="False">
                     <StackPanel Background="{DynamicResource DarkBackground}">
-                        <Button Content="New (Ctrl+N)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/new.png" Click="NewFile_Click"/>
-                        <Button Content="Open File (Ctrl+O)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/open.png" Click="OpenFile_Click"/>
-                        <Button Content="Save (Ctrl+S)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/save.png" Click="SaveFile_Click"/>
+                        <Button Content="New (Ctrl+N)" Style="{StaticResource BaseButtonStyle}" Click="NewFile_Click"/>
+                        <Button Content="Open File (Ctrl+O)" Style="{StaticResource BaseButtonStyle}" Click="OpenFile_Click"/>
+                        <Button Content="Save (Ctrl+S)" Style="{StaticResource BaseButtonStyle}" Click="SaveFile_Click"/>
                     </StackPanel>
                 </Popup>
-                <Button x:Name="EditButton" Content="Edit" Style="{StaticResource BaseButtonStyle}" Tag="Icons/edit.png" Click="ToggleMenu_Click" ToolTip="Edit operations"/>
+                <Button x:Name="EditButton" Content="Edit" Style="{StaticResource BaseButtonStyle}" Click="ToggleMenu_Click" ToolTip="Edit operations"/>
                 <Popup x:Name="EditMenu" PlacementTarget="{Binding ElementName=EditButton}" Placement="Custom" CustomPopupPlacementCallback="PopupPlacementCallback" StaysOpen="False">
                     <StackPanel Background="{DynamicResource DarkBackground}">
-                        <Button Content="Bold (Ctrl+B)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/bold.png" Click="Bold_Click"/>
-                        <Button Content="Italic (Ctrl+I)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/italic.png" Click="Italic_Click"/>
-                        <Button Content="Copy (Ctrl+C)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/copy.png" Click="Copy_Click"/>
-                        <Button Content="Cut (Ctrl+X)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/cut.png" Click="Cut_Click"/>
-                        <Button Content="Paste (Ctrl+V)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/paste.png" Click="Paste_Click"/>
+                        <Button Content="Bold (Ctrl+B)" Style="{StaticResource BaseButtonStyle}" Click="Bold_Click"/>
+                        <Button Content="Italic (Ctrl+I)" Style="{StaticResource BaseButtonStyle}" Click="Italic_Click"/>
+                        <Button Content="Copy (Ctrl+C)" Style="{StaticResource BaseButtonStyle}" Click="Copy_Click"/>
+                        <Button Content="Cut (Ctrl+X)" Style="{StaticResource BaseButtonStyle}" Click="Cut_Click"/>
+                        <Button Content="Paste (Ctrl+V)" Style="{StaticResource BaseButtonStyle}" Click="Paste_Click"/>
                     </StackPanel>
                 </Popup>
-                <Button x:Name="ViewButton" Content="View" Style="{StaticResource BaseButtonStyle}" Tag="Icons/view.png" Click="ToggleMenu_Click" ToolTip="View options"/>
+                <Button x:Name="ViewButton" Content="View" Style="{StaticResource BaseButtonStyle}" Click="ToggleMenu_Click" ToolTip="View options"/>
                 <Popup x:Name="ViewMenu" PlacementTarget="{Binding ElementName=ViewButton}" Placement="Custom" CustomPopupPlacementCallback="PopupPlacementCallback" StaysOpen="False">
                     <StackPanel Background="{DynamicResource DarkBackground}">
-                        <Button Content="Change to Raw (Ctrl+1)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/source.png" Click="SourceCodeMode_Click"/>
-                        <Button Content="Change to UsingMd (Ctrl+2)" Style="{StaticResource BaseButtonStyle}" Tag="Icons/preview.png" Click="MarkdownMode_Click"/>
-                        <Button Content="Change Theme" Style="{StaticResource BaseButtonStyle}" Tag="Icons/theme.png" Click="ChangeTheme_Click"/>
-                        <Button Content="Change Mode" Style="{StaticResource BaseButtonStyle}" Tag="Icons/theme.png" Click="ChangeMode_Click"/>
+                        <Button Content="Change to Raw (Ctrl+1)" Style="{StaticResource BaseButtonStyle}" Click="SourceCodeMode_Click"/>
+                        <Button Content="Change to UsingMd (Ctrl+2)" Style="{StaticResource BaseButtonStyle}" Click="MarkdownMode_Click"/>
+                        <Button Content="Change Theme" Style="{StaticResource BaseButtonStyle}" Click="ChangeTheme_Click"/>
+                        <Button Content="Change Mode" Style="{StaticResource BaseButtonStyle}" Click="ChangeMode_Click"/>
                     </StackPanel>
                 </Popup>
-                <Button x:Name="HelpButton" Content="Help" Style="{StaticResource BaseButtonStyle}" Tag="Icons/help.png" Click="ToggleMenu_Click" ToolTip="Help and about"/>
+                <Button x:Name="HelpButton" Content="Help" Style="{StaticResource BaseButtonStyle}" Click="ToggleMenu_Click" ToolTip="Help and about"/>
                 <Popup x:Name="HelpMenu" PlacementTarget="{Binding ElementName=HelpButton}" Placement="Custom" CustomPopupPlacementCallback="PopupPlacementCallback" StaysOpen="False">
                     <StackPanel Background="{DynamicResource DarkBackground}">
-                        <Button Content="About" Style="{StaticResource BaseButtonStyle}" Tag="Icons/about.png" Click="About_Click"/>
+                        <Button Content="About" Style="{StaticResource BaseButtonStyle}" Click="About_Click"/>
                     </StackPanel>
                 </Popup>
             </StackPanel>
@@ -91,13 +89,13 @@
                     <ColumnDefinition Width="70*"/>
                     <ColumnDefinition Width="15*"/>
                 </Grid.ColumnDefinitions>
-
-                <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource BackgroundColor}" Padding="20" CornerRadius="5" Effect="{StaticResource ShadowEffect}" BorderThickness="0">
+                <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource BackgroundColor}" Padding="20" CornerRadius="10" Effect="{StaticResource ShadowEffect}">
                     <wv2:WebView2 x:Name="webViewEditor" Source="about:blank" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
                 </Border>
-                <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource BackgroundColor}" Padding="20" CornerRadius="5" BorderThickness="0" VerticalAlignment="Center" Height="484">
+                <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource BackgroundColor}" Padding="20" CornerRadius="10">
                     <TextBox x:Name="markdownTextBox" Visibility="Collapsed" AcceptsReturn="True" AcceptsTab="True" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource TextColor}" BorderThickness="0"/>
                 </Border>
+                <TextBlock Grid.Row="2" Text="Made with &lt;3 by Kurizaki" HorizontalAlignment="Center" VerticalAlignment="Center" FontStyle="Italic" Opacity="0.2" Foreground="{DynamicResource TextColor}" FontSize="12" Grid.Column="1"/>
             </Grid>
         </Grid>
     </Grid>
