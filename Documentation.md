@@ -1,309 +1,106 @@
-# IPERKA Project Documentation
-
-## Table of Contents
-
-1. [Idea](#idea)
-2. [Project Proposal](#project-proposal)
-3. [Inform](#inform)
-4. [Criteria Catalog](#criteria-catalog)
-5. [Time Schedule](#time-schedule)
-6. [Test Plan](#test-plan)
-7. [User Stories](#user-stories)
-8. [Test Concept](#test-concept)
-9. [Requirements Specification](#requirements-specification)
-10. [Task List](#task-list)
-11. [Decision](#decision)
-12. [Realization](#realization)
-13. [Test Protocol](#test-protocol)
-14. [Test Conclusion](#test-conclusion)
-15. [Explorative Tests](#explorative-tests)
-16. [Evaluate](#evaluate)
-
----
-
-## Idea
-
-### Description
-
-The initial idea is to develop a Markdown Editor application with a user-friendly interface that supports both writing and previewing Markdown content. The application will include features such as syntax highlighting, real-time preview, and various editing tools.
-
-### Goals
-
-- Provide an intuitive interface for writing Markdown.
-- Implement real-time Markdown preview.
-- Support basic editing functionalities (bold, italic, headings, lists, etc.).
-- Ensure cross-platform compatibility.
-
-| Datum | Version | Summary                                              |
-| ----- | ------- | ---------------------------------------------------- |
-|       | 0.0.1   | ✍️ Each time you work on the project, add a new line and describe in *one* sentence what you achieved. |
-|       | ...     |                                                      |
-|       | 1.0.0   |                                                      |
-
----
-
-## Project Proposal
-
-### Project Title
-
-Markdown Editor Application
-
-### Project Overview
-
-This project aims to create a versatile Markdown Editor that caters to both novice and experienced users. The editor will support Markdown syntax highlighting and provide a live preview of the Markdown content.
-
-### Objectives
-
-- Develop a robust Markdown parser.
-- Design a user-friendly GUI.
-- Integrate real-time preview functionality.
-- Implement core Markdown editing features.
-
-### Stakeholders
-
-- Project Manager
-- Developers
-- End-users
-
-### Benefits
-
-- Simplifies the process of writing and previewing Markdown.
-- Enhances productivity for content creators.
-- Provides a learning tool for new Markdown users.
-
----
-
-## Inform
-
-### Research
-
-Research will be conducted on existing Markdown editors, their features, and user reviews. Key areas of focus include user interface design, performance, and feature set.
-
-### Technologies
-
-- Programming Language: C#
-- Framework: WPF
-- Libraries: Markdig (for Markdown parsing), WebView2 (for rendering HTML preview)
-
-### Constraints
-
-- Time: Project must be completed within three months.
-- Budget: Limited to open-source libraries and tools.
-
----
-
-## Criteria Catalog
-
-### Functional Requirements
-
-- Real-time Markdown preview.
-- Syntax highlighting.
-- Basic text formatting (bold, italic, headings, lists).
-
-### Non-Functional Requirements
-
-- User-friendly interface.
-- High performance and responsiveness.
-- Cross-platform compatibility.
-
-### Quality Criteria
-
-- Usability: The application should be intuitive and easy to use.
-- Performance: Real-time preview should not lag.
-- Reliability: The application should handle various Markdown syntaxes correctly.
-
----
-
-## Time Schedule
-
-| Phase            | Start Date | End Date   | Duration |
-|------------------|------------|------------|----------|
-| Planning         | 01/06/2024 | 07/06/2024 | 1 week   |
-| Design           | 08/06/2024 | 21/06/2024 | 2 weeks  |
-| Development      | 22/06/2024 | 30/07/2024 | 6 weeks  |
-| Testing          | 31/07/2024 | 14/08/2024 | 2 weeks  |
-| Deployment       | 15/08/2024 | 21/08/2024 | 1 week   |
-
----
-
-## Test Plan
-
-### Testing Strategies
-
-- Unit Testing: Test individual components and functionalities.
-- Integration Testing: Ensure that different parts of the application work together.
-- User Acceptance Testing (UAT): Validate the application with end-users.
-
-### Test Environment
-
-- Operating Systems: Windows, macOS, Linux
-- Browsers: Chrome, Firefox, Edge (for WebView2 component)
-
-### Test Cases
-
-| TC-№ | Ausgangslage | Eingabe | Erwartete Ausgabe |
-| ---- | ------------ | ------- | ----------------- |
-| 1.1  |              |         |                   |
-| ...  |              |         |                   |
-
----
-
-## User Stories
-
-| US-№ | Verbindlichkeit | Typ  | Beschreibung                       |
-| ---- | --------------- | ---- | ---------------------------------- |
-| 1    |                 |      | Als ein 🤷‍♂️ möchte ich 🤷‍♂️, damit 🤷‍♂️ |
-| ...  |                 |      |                                    |
-
----
-
-## Test Concept
-
-### Unit Tests
-
-Each core functionality (e.g., real-time preview, text formatting) will be tested independently to ensure correctness.
-
-### Integration Tests
-
-Tests will be conducted to ensure that the Markdown parser and preview components work seamlessly together.
-
-### User Acceptance Tests
-
-Selected users will be asked to use the application and provide feedback on usability and functionality.
-
----
-
-## Requirements Specification
-
-### Functional Requirements
-
-1. **Real-time Preview:** The application must display a real-time preview of the Markdown content.
-2. **Text Formatting:** The application must support bold, italic, headings, and lists.
-3. **File Operations:** The application must allow users to open, save, and create new Markdown files.
-
-### Non-Functional Requirements
-
-1. **Performance:** The application should render the preview without noticeable delays.
-2. **Usability:** The interface should be intuitive and easy to navigate.
-3. **Compatibility:** The application should work on Windows, macOS, and Linux.
-
----
-
-## Task List
-
-### Planning
-
-| AP-№ | Frist | Zuständig | Beschreibung | geplante Zeit |
-| ---- | ----- | --------- | ------------ | ------------- |
-| 1.A  |       |           |              |               |
-| ...  |       |           |              |               |
-
-### Design
-
-- Create wireframes and mockups.
-- Design the application architecture.
-
-### Development
-
-| AP-№ | Datum | Zuständig | geplante Zeit | tatsächliche Zeit |
-| ---- | ----- | --------- | ------------- | ----------------- |
-| 1.A  |       |           |               |                   |
-| ...  |       |           |               |                   |
-
-### Testing
-
-- Write and execute unit tests.
-- Conduct integration testing.
-- Perform user acceptance testing.
-
-### Deployment
-
-- Prepare deployment packages.
-- Distribute the application to users.
-
----
-
-## Decision
-
-### Key Decisions
-
-- **Technology Stack:** Use C#, WPF, Markdig, and WebView2.
-- **Feature Set:** Focus on core Markdown functionalities and user-friendly interface.
-- **Testing Approach:** Implement unit, integration, and user acceptance testing.
-
----
-
-## Realization
-
-### Development Process
-
-The development will follow an agile approach with iterative cycles. Each cycle will focus on a set of features and improvements based on feedback.
-
-### Tools and Technologies
-
-- **IDE:** Visual Studio
-- **Version Control:** GitHub
-- **Markdown Parser:** Markdig
-- **UI Framework:** WPF
-- **WebView Component:** WebView2
-
----
-
-## Test Protocol
-
-| TC-№ | Datum | Resultat | Tester |
-| ---- | ----- | -------- | ------ |
-| 1.1  |       |          |        |
-| ...  |       |          |        |
-
----
-
-## Test Conclusion
-
-### Summary of Results
-
-- **Unit Tests:** Passed all individual component tests.
-- **Integration Tests:** Confirmed seamless integration of components.
-- **User Acceptance Tests:** Received positive feedback from users.
-
-### Issues and Resolutions
-
-- **Issue:** Initial lag in real-time preview.
-  - **Resolution:** Optimized the rendering pipeline.
-
----
-
-## Explorative Tests
+# Projekt-Dokumentation UsingMd
+
+Keanu Koelewijn
+
+| Datum      | Version | Zusammenfassung                                              |
+| ---------- | ------- | ------------------------------------------------------------ |
+| 10.06.2024 | 0.0.1   | Initiales Setup des Projekts, Projektdokumentation erstellt  |
+| 12.06.2024 | 0.1.0   | Grundlegende Funktionalitäten implementiert                  |
+| 14.06.2024 | 0.2.0   | Erweiterung der Benutzeroberfläche                           |
+| 16.06.2024 | 0.3.0   | Implementierung der Markdown-Vorschau abgeschlossen          |
+| 18.06.2024 | 1.0.0   | Projekt abgeschlossen und final getestet                     |
+
+## 1 Informieren
+
+### 1.1 Ihr Projekt
+
+Entwicklung einer WPF-Anwendung zur Bearbeitung und Vorschau von Markdown-Dateien mit integrierter WebView2-Komponente.
+
+### 1.2 User Stories
+
+| US-№ | Verbindlichkeit | Typ        | Beschreibung |
+| ---- | --------------- | ---------- | ------------ |
+| 1    | Muss            | Funktional | Als Entwickler möchte ich eine Methode implementieren, um Markdown-Dateien zu öffnen, damit ich vorhandene Dateien bearbeiten kann. |
+| 2    | Muss            | Funktional | Als Entwickler möchte ich eine Methode implementieren, um Markdown-Dateien zu speichern, damit Änderungen gespeichert werden können. |
+| 3    | Muss            | Funktional | Als Entwickler möchte ich eine Live-Vorschau des Markdown-Textes in HTML anzeigen, damit Benutzer ihre Änderungen sofort sehen können. |
+| 4    | Muss            | Funktional | Als Benutzer möchte ich Text im Markdown-Format eingeben und formatiert anzeigen lassen, um die Lesbarkeit zu erhöhen. |
+| 5    | Muss            | Funktional | Als Benutzer möchte ich verschiedene Formatierungsoptionen wie Fett und Kursiv nutzen können, um den Text zu gestalten. |
+| 6    | Muss            | Funktional | Als Benutzer möchte ich zwischen verschiedenen Themen und Modi (Hell/Dunkel) wechseln können, um die Benutzeroberfläche anzupassen. |
+| 7    | Kann            | Funktional | Als Benutzer möchte ich Tabellen im Markdown-Format bearbeiten und anzeigen können, um strukturierte Daten zu verwalten. |
+
+### 1.3 Testfälle
+
+| TC-№ | Ausgangslage                                  | Eingabe                                  | Erwartete Ausgabe                                           |
+| ---- | --------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------- |
+| 1.1  | Anwendung ist gestartet                       | Öffnen einer Markdown-Datei              | Inhalt der Datei wird im Textfeld angezeigt                 |
+| 2.1  | Markdown-Text ist eingegeben                  | Speichern der Datei                      | Datei wird erfolgreich gespeichert                          |
+| 3.1  | Markdown-Text ist eingegeben                  | Aktualisieren der Vorschau               | HTML-Vorschau wird korrekt angezeigt                        |
+| 4.1  | Anwendung ist gestartet                       | Eingabe von Markdown-Text                | Text wird formatiert angezeigt                              |
+| 5.1  | Markdown-Text ist eingegeben                  | Anwendung von Fettschrift                | Text wird fett dargestellt                                  |
+| 6.1  | Anwendung ist gestartet                       | Wechsel des Themas                       | Benutzeroberfläche wechselt das Thema                       |
+| 7.1  | Markdown-Text mit Tabelle ist eingegeben      | Tabelle wird bearbeitet                  | Änderungen werden korrekt angezeigt                         |
+
+### 1.4 Diagramme
+
+(Mockup)
+
+## 2 Planen
+
+| AP-№ | Frist      | Zuständig       | Beschreibung                                              | geplante Zeit |
+| ---- | ---------- | --------------- | --------------------------------------------------------- | ------------- |
+| 1.A  | 11.06.2024 | Keanu Koelewijn | Projektsetup in Visual Studio                             | 45min         |
+| 1.B  | 11.06.2024 | Keanu Koelewijn | GitHub-Repository erstellen                               | 15min         |
+| 2.A  | 12.06.2024 | Keanu Koelewijn | Implementierung der Dateiöffnungs-Funktion                | 1h            |
+| 2.B  | 12.06.2024 | Keanu Koelewijn | Implementierung der Dateispeicher-Funktion                | 1h            |
+| 3.A  | 13.06.2024 | Keanu Koelewijn | Implementierung der Markdown-Vorschau                     | 2h            |
+| 4.A  | 13.06.2024 | Keanu Koelewijn | Integration von Formatierungsoptionen (Fett, Kursiv)      | 1h 30min      |
+| 5.A  | 14.06.2024 | Keanu Koelewijn | Integration der Themen- und Moduswechsel                  | 1h 30min      |
+| 6.A  | 15.06.2024 | Keanu Koelewijn | Implementierung der Tabellenbearbeitung                   | 2h            |
+| 7.A  | 16.06.2024 | Keanu Koelewijn | Erstellung und Durchführung von Testfällen                | 2h            |
+
+Total: 12h 30min
+
+## 3 Entscheiden
+
+Ich habe entschieden, WebView2 für die HTML-Vorschau zu verwenden, um eine aktuelle und schnelle Darstellung der Markdown-Inhalte zu gewährleisten. Für die Formatierungsoptionen setze ich auf einfache Buttons, die die entsprechenden Markdown-Syntaxelemente einfügen.
+
+## 4 Realisieren
+
+| AP-№ | Datum      | Zuständig       | geplante Zeit | tatsächliche Zeit |
+| ---- | ---------- | --------------- | ------------- | ----------------- |
+| 1.A  | 11.06.2024 | Keanu Koelewijn | 45min         | 45min             |
+| 1.B  | 11.06.2024 | Keanu Koelewijn | 15min         | 15min             |
+| 2.A  | 12.06.2024 | Keanu Koelewijn | 1h            | 1h 15min          |
+| 2.B  | 12.06.2024 | Keanu Koelewijn | 1h            | 1h                |
+| 3.A  | 13.06.2024 | Keanu Koelewijn | 2h            | 2h 30min          |
+| 4.A  | 13.06.2024 | Keanu Koelewijn | 1h 30min      | 1h 45min          |
+| 5.A  | 14.06.2024 | Keanu Koelewijn | 1h 30min      | 1h 30min          |
+| 6.A  | 15.06.2024 | Keanu Koelewijn | 2h            | 2h 15min          |
+| 7.A  | 16.06.2024 | Keanu Koelewijn | 2h            | 2h                |
+
+## 5 Kontrollieren
+
+### 5.1 Testprotokoll
+
+| TC-№ | Datum      | Resultat | Tester         |
+| ---- | ---------- | -------- | -------------- |
+| 1.1  | 16.06.2024 | OK       | Keanu Koelewijn|
+| 2.1  | 16.06.2024 | OK       | Keanu Koelewijn|
+| 3.1  | 16.06.2024 | OK       | Keanu Koelewijn|
+| 4.1  | 16.06.2024 | OK       | Keanu Koelewijn|
+| 5.1  | 16.06.2024 | OK       | Keanu Koelewijn|
+| 6.1  | 16.06.2024 | OK       | Keanu Koelewijn|
+| 7.1  | 16.06.2024 | OK       | Keanu Koelewijn|
+
+### 5.2 Exploratives Testen
 
 | BR-№ | Ausgangslage | Eingabe | Erwartete Ausgabe | Tatsächliche Ausgabe |
 | ---- | ------------ | ------- | ----------------- | -------------------- |
-| I    |              |         |                   |                      |
-| ...  |              |         |                   |                      |
+| I    | Anwendung gestartet | Eingabe von Markdown-Text | Korrekte Vorschau | Vorschau wird korrekt angezeigt |
+| II   | Tabelle vorhanden | Bearbeitung der Tabelle | Tabelle wird korrekt aktualisiert | Tabelle wird korrekt aktualisiert |
 
----
+Alle Tests verliefen erfolgreich und ergaben keine schwerwiegenden Fehler.
 
-## Evaluate
+## 6 Auswerten
 
-### Project Review
-
-- **Goals Met:** Successfully implemented the core functionalities and achieved a user-friendly interface.
-- **User Feedback:** Positive feedback on ease of use and real-time preview feature.
-- **Lessons Learned:** Importance of performance optimization and user feedback in the development process.
-
-### Future Improvements
-
-- **Additional Features:** Support for more advanced Markdown features (tables, footnotes).
-- **Performance Enhancements:** Further optimize the rendering engine.
-- **User Interface:** Refine the UI based on user feedback.
-
----
-
-| Datum | Version | Zusammenfassung                                              |
-| ----- | ------- | ------------------------------------------------------------ |
-|       | 0.0.1   | ✍️ Jedes Mal, wenn Sie an dem Projekt arbeiten, fügen Sie hier eine neue Zeile ein und beschreiben in *einem* Satz, was Sie erreicht haben. |
-|       | ...     |                                                              |
-|       | 1.0.0   |                                                              |
-
----
-
-By following this detailed documentation structure, you ensure clarity and comprehensiveness in your IPERKA project, facilitating seamless collaboration and progress tracking.
+Keanu Koelewijn: [Portfolio eintrag Keanu Koelewijn](https://portfolio.bbbaden.ch/view/view.php?t=a8e509f346e01f537852)
