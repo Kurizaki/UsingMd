@@ -26,10 +26,9 @@ namespace UsingMd
             InitializeWebView();
             this.Loaded += MainWindow_Loaded;
             Closing += MainWindow_Closing;
-            markdownTextBox.TextChanged += (s, e) =>
+            MarkdownTextBox.TextChanged += (s, e) =>
             {
-                currentMarkdownText = markdownTextBox.Text;
-                UpdatePreview(currentMarkdownText);
+                currentMarkdownText = MarkdownTextBox.Text;
                 isDocumentModified = true;
             };
         }
@@ -38,19 +37,23 @@ namespace UsingMd
         {
             try
             {
-                await webViewEditor.EnsureCoreWebView2Async();
+                await WebViewEditor.EnsureCoreWebView2Async();
 
                 string htmlFilePath = Path.Combine(projectDirectoryPath, "initialContent.html");
                 if (File.Exists(htmlFilePath))
                 {
-                    webViewEditor.NavigateToString(await File.ReadAllTextAsync(htmlFilePath));
+                    WebViewEditor.NavigateToString(await File.ReadAllTextAsync(htmlFilePath));
                 }
                 else
                 {
                     MessageBox.Show($"File not found: {htmlFilePath}");
                 }
 
-                webViewEditor.CoreWebView2InitializationCompleted += WebViewEditor_CoreWebView2InitializationCompleted;
+                WebViewEditor.CoreWebView2InitializationCompleted += WebViewEditor_CoreWebView2InitializationCompleted;
+                WebViewEditor.CoreWebView2.Settings.IsSwipeNavigationEnabled = false; // Disable swipe navigation
+
+                // Initialize editor script
+                InitializeEditorScript();
             }
             catch (Exception ex)
             {
@@ -58,19 +61,58 @@ namespace UsingMd
             }
         }
 
+        private void InitializeEditorScript()
+        {
+            string script = @"
+                document.addEventListener('DOMContentLoaded', () => {
+                    function makeTableEditable(table) {
+                        const rows = table.rows;
+                        for (let i = 0; i < rows.length; i++) {
+                            const cells = rows[i].cells;
+                            for (let j = 0; j < cells.length; j++) {
+                                const cell = cells[j];
+                                cell.setAttribute('contenteditable', 'true');
+                            }
+                        }
+                    }
 
+                    const observer = new MutationObserver((mutations) => {
+                        mutations.forEach((mutation) => {
+                            if (mutation.type === 'childList') {
+                                mutation.addedNodes.forEach((node) => {
+                                    if (node.nodeName === 'TABLE') {
+                                        makeTableEditable(node);
+                                    }
+                                });
+                            }
+                        });
+                    });
 
+                    observer.observe(document.body, { childList: true, subtree: true });
+
+                    const existingTable = document.querySelector('table');
+                    if (existingTable) {
+                        makeTableEditable(existingTable);
+                    }
+                });
+            ";
+            WebViewEditor.CoreWebView2.ExecuteScriptAsync(script);
+        }
 
         private void WebViewEditor_CoreWebView2InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
         {
             if (e.IsSuccess)
             {
-                webViewEditor.CoreWebView2.WebMessageReceived += (s, e) =>
+                WebViewEditor.CoreWebView2.WebMessageReceived += (s, e) =>
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        markdownTextBox.Text = e.TryGetWebMessageAsString();
-                        isDocumentModified = true;
+                        string markdownContent = e.TryGetWebMessageAsString();
+                        if (!string.IsNullOrEmpty(markdownContent))
+                        {
+                            MarkdownTextBox.Text = markdownContent;
+                            currentMarkdownText = markdownContent;
+                        }
                     });
                 };
                 UpdateWebViewTheme();
@@ -82,9 +124,10 @@ namespace UsingMd
         {
             if (Application.Current.Resources["WebViewBackgroundColor"] is Color webViewBackgroundColor)
             {
-                webViewEditor.DefaultBackgroundColor = System.Drawing.Color.FromArgb(webViewBackgroundColor.A, webViewBackgroundColor.R, webViewBackgroundColor.G, webViewBackgroundColor.B);
+                WebViewEditor.DefaultBackgroundColor = System.Drawing.Color.FromArgb(webViewBackgroundColor.A, webViewBackgroundColor.R, webViewBackgroundColor.G, webViewBackgroundColor.B);
             }
-            SourceCodeMode_Click(this, new RoutedEventArgs());
+            WebViewEditor.Visibility = Visibility.Collapsed;
+            MarkdownTextBox.Visibility = Visibility.Visible;
         }
 
         private void UpdatePreview(string markdownText)
@@ -99,7 +142,7 @@ namespace UsingMd
                         var script = document.createElement('script');
                         script.src = 'editor.js';
                         document.body.appendChild(script);";
-                    webViewEditor.CoreWebView2.ExecuteScriptAsync(script);
+                    WebViewEditor.CoreWebView2.ExecuteScriptAsync(script);
                 });
             }
         }
@@ -111,7 +154,7 @@ namespace UsingMd
             var saveFileDialog = new SaveFileDialog { Filter = "Markdown Files (*.md)|*.md|All Files (*.*)|*.*" };
             if (saveFileDialog.ShowDialog() == true)
             {
-                webViewEditor.CoreWebView2.ExecuteScriptAsync("document.getElementById('editor').innerText").ContinueWith(t =>
+                WebViewEditor.CoreWebView2.ExecuteScriptAsync("document.getElementById('editor').innerText").ContinueWith(t =>
                 {
                     Dispatcher.Invoke(() =>
                     {
@@ -128,20 +171,20 @@ namespace UsingMd
             if (openFileDialog.ShowDialog() == true)
             {
                 string fileContent = File.ReadAllText(openFileDialog.FileName);
-                markdownTextBox.Text = fileContent;
+                MarkdownTextBox.Text = fileContent;
                 currentMarkdownText = fileContent;
-                webViewEditor.CoreWebView2.ExecuteScriptAsync($"document.getElementById('editor').innerText = `{fileContent.Replace("\n", "\\n")}`;");
+                WebViewEditor.CoreWebView2.ExecuteScriptAsync($"document.getElementById('editor').innerText = `{fileContent.Replace("\n", "\\n")}`;");
                 isDocumentModified = false;
             }
         }
 
-        private void InsertMarkdownSyntax(string syntax) => webViewEditor.CoreWebView2.ExecuteScriptAsync($"document.execCommand('insertText', false, `{syntax}`);");
+        private void InsertMarkdownSyntax(string syntax) => WebViewEditor.CoreWebView2.ExecuteScriptAsync($"document.execCommand('insertText', false, `{syntax}`);");
 
         private void NewFile_Click(object sender, RoutedEventArgs e)
         {
-            markdownTextBox.Clear();
+            MarkdownTextBox.Clear();
             currentMarkdownText = string.Empty;
-            webViewEditor.CoreWebView2.ExecuteScriptAsync("document.getElementById('editor').innerText = '';");
+            WebViewEditor.CoreWebView2.ExecuteScriptAsync("document.getElementById('editor').innerText = '';");
             isDocumentModified = true;
         }
 
@@ -149,23 +192,135 @@ namespace UsingMd
 
         private void Italic_Click(object sender, RoutedEventArgs e) => InsertMarkdownSyntax("*Italic*");
 
-        private void Copy_Click(object sender, RoutedEventArgs e) => webViewEditor.CoreWebView2.ExecuteScriptAsync("document.execCommand('copy');");
+        private void Copy_Click(object sender, RoutedEventArgs e) => WebViewEditor.CoreWebView2.ExecuteScriptAsync("document.execCommand('copy');");
 
-        private void Cut_Click(object sender, RoutedEventArgs e) => webViewEditor.CoreWebView2.ExecuteScriptAsync("document.execCommand('cut');");
+        private void Cut_Click(object sender, RoutedEventArgs e) => WebViewEditor.CoreWebView2.ExecuteScriptAsync("document.execCommand('cut');");
 
-        private void Paste_Click(object sender, RoutedEventArgs e) => webViewEditor.CoreWebView2.ExecuteScriptAsync("document.execCommand('paste');");
+        private void Paste_Click(object sender, RoutedEventArgs e) => WebViewEditor.CoreWebView2.ExecuteScriptAsync("document.execCommand('paste');");
 
-        private void SourceCodeMode_Click(object sender, RoutedEventArgs e)
+        private async void SourceCodeMode_Click(object sender, RoutedEventArgs e)
         {
-            webViewEditor.Visibility = Visibility.Collapsed;
-            markdownTextBox.Visibility = Visibility.Visible;
+            // Ensure the WebView2 control is initialized
+            if (WebViewEditor.CoreWebView2 == null)
+            {
+                await WebViewEditor.EnsureCoreWebView2Async(null);
+            }
+
+            string script = @"
+                (function() {
+                    function convertTableToMarkdown(table) {
+                        let markdownTable = '';
+                        const rows = table.rows;
+                        for (let i = 0; i < rows.length; i++) {
+                            let rowMarkdown = '| ';
+                            const cells = rows[i].cells;
+                            for (let j = 0; j < cells.length; j++) {
+                                rowMarkdown += cells[j].textContent.trim() + ' | ';
+                            }
+                            markdownTable += rowMarkdown + '\n';
+                            if (i === 0) {
+                                markdownTable += '|---'.repeat(cells.length) + '|\n';
+                            }
+                        }
+                        return markdownTable;
+                    }
+
+                    function convertListToMarkdown(list, marker) {
+                        let markdownList = '';
+                        const items = list.children;
+                        for (let i = 0; i < items.length; i++) {
+                            markdownList += marker + ' ' + items[i].textContent.trim() + '\n';
+                            if (items[i].querySelector('ul, ol')) {
+                                markdownList += convertListToMarkdown(items[i].querySelector('ul, ol'), marker === '-' ? '-' : '1.') + '\n';
+                            }
+                        }
+                        return markdownList;
+                    }
+
+                    function convertHtmlToMarkdown() {
+                        let markdown = '';
+                        const body = document.body;
+
+                        function walk(node) {
+                            if (node.nodeType === Node.ELEMENT_NODE) {
+                                if (node.tagName === 'TABLE') {
+                                    markdown += convertTableToMarkdown(node) + '\n\n';
+                                } else if (node.tagName === 'H1') {
+                                    markdown += '# ' + node.textContent.trim() + '\n\n';
+                                } else if (node.tagName === 'H2') {
+                                    markdown += '## ' + node.textContent.trim() + '\n\n';
+                                } else if (node.tagName === 'H3') {
+                                    markdown += '### ' + node.textContent.trim() + '\n\n';
+                                } else if (node.tagName === 'P') {
+                                    markdown += node.textContent.trim() + '\n\n';
+                                } else if (node.tagName === 'UL') {
+                                    markdown += convertListToMarkdown(node, '-') + '\n\n';
+                                } else if (node.tagName === 'OL') {
+                                    markdown += convertListToMarkdown(node, '1.') + '\n\n';
+                                }
+                            }
+                            for (let child = node.firstChild; child; child = child.nextSibling) {
+                                walk(child);
+                            }
+                        }
+
+                        walk(body);
+                        return markdown.trim();
+                    }
+
+                    try {
+                        const markdown = convertHtmlToMarkdown();
+                        window.chrome.webview.postMessage(markdown);
+                    } catch (error) {
+                        window.chrome.webview.postMessage(`Error: ${error.message}`);
+                    }
+                })();
+            ";
+
+            WebViewEditor.CoreWebView2.WebMessageReceived += (s, args) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    string markdownContent = args.TryGetWebMessageAsString();
+                    if (!string.IsNullOrEmpty(markdownContent) && !markdownContent.StartsWith("Error:"))
+                    {
+                        MarkdownTextBox.Text = markdownContent;
+                        currentMarkdownText = markdownContent;
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Error retrieving markdown content: {markdownContent}");
+                    }
+                });
+            };
+
+            try
+            {
+                // Execute the JavaScript in the WebView and capture the return value
+                await WebViewEditor.CoreWebView2.ExecuteScriptAsync(script);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error executing script: {ex.Message}");
+            }
+
+            // Toggle visibility of WebView and TextBox
+            WebViewEditor.Visibility = Visibility.Collapsed;
+            MarkdownTextBox.Visibility = Visibility.Visible;
         }
 
         private void MarkdownMode_Click(object sender, RoutedEventArgs e)
         {
-            webViewEditor.Visibility = Visibility.Visible;
-            markdownTextBox.Visibility = Visibility.Collapsed;
-            UpdatePreview(markdownTextBox.Text);
+            // Save current Markdown text to the WebView editor
+            string markdownText = MarkdownTextBox.Text.Replace("\n", "\\n").Replace("\"", "\\\"");
+            WebViewEditor.CoreWebView2.ExecuteScriptAsync($"document.getElementById('editor').innerText = \"{markdownText}\";");
+
+            // Toggle visibility of WebView and TextBox
+            WebViewEditor.Visibility = Visibility.Visible;
+            MarkdownTextBox.Visibility = Visibility.Collapsed;
+
+            // Update preview in WebView
+            UpdatePreview(MarkdownTextBox.Text);
         }
 
         private void MainWindow_Closing(object sender, CancelEventArgs e)
@@ -192,11 +347,11 @@ namespace UsingMd
 
             if (Application.Current.Resources["WebViewBackgroundColor"] is Color webViewBackgroundColor)
             {
-                webViewEditor.DefaultBackgroundColor = System.Drawing.Color.FromArgb(webViewBackgroundColor.A, webViewBackgroundColor.R, webViewBackgroundColor.G, webViewBackgroundColor.B);
+                WebViewEditor.DefaultBackgroundColor = System.Drawing.Color.FromArgb(webViewBackgroundColor.A, webViewBackgroundColor.R, webViewBackgroundColor.G, webViewBackgroundColor.B);
             }
             Dispatcher.Invoke(() =>
             {
-                if (webViewEditor.CoreWebView2 != null) UpdateWebViewTheme();
+                if (WebViewEditor.CoreWebView2 != null) UpdateWebViewTheme();
             });
         }
 
@@ -214,11 +369,11 @@ namespace UsingMd
 
             if (Application.Current.Resources["WebViewBackgroundColor"] is Color webViewBackgroundColor)
             {
-                webViewEditor.DefaultBackgroundColor = System.Drawing.Color.FromArgb(webViewBackgroundColor.A, webViewBackgroundColor.R, webViewBackgroundColor.G, webViewBackgroundColor.B);
+                WebViewEditor.DefaultBackgroundColor = System.Drawing.Color.FromArgb(webViewBackgroundColor.A, webViewBackgroundColor.R, webViewBackgroundColor.G, webViewBackgroundColor.B);
             }
             Dispatcher.Invoke(() =>
             {
-                if (webViewEditor.CoreWebView2 != null) ReloadMarkdownContent();
+                if (WebViewEditor.CoreWebView2 != null) ReloadMarkdownContent();
             });
         }
 
@@ -226,9 +381,9 @@ namespace UsingMd
         {
             Dispatcher.Invoke(() =>
             {
-                if (webViewEditor.CoreWebView2 != null)
+                if (WebViewEditor.CoreWebView2 != null)
                 {
-                    webViewEditor.CoreWebView2.ExecuteScriptAsync("document.getElementById('editor').innerText").ContinueWith(t => { currentMarkdownText = t.Result.Trim('"'); });
+                    WebViewEditor.CoreWebView2.ExecuteScriptAsync("document.getElementById('editor').innerText").ContinueWith(t => { currentMarkdownText = t.Result.Trim('"'); });
                 }
             });
         }
@@ -237,7 +392,7 @@ namespace UsingMd
         {
             Dispatcher.Invoke(() =>
             {
-                if (webViewEditor.CoreWebView2 != null) UpdatePreview(currentMarkdownText);
+                if (WebViewEditor.CoreWebView2 != null) UpdatePreview(currentMarkdownText);
             });
         }
 
@@ -254,7 +409,7 @@ namespace UsingMd
                     document.documentElement.style.setProperty('--color', '{textColor}');
                 ";
 
-                webViewEditor.CoreWebView2.ExecuteScriptAsync(script).ContinueWith(t => { ReloadMarkdownContent(); });
+                WebViewEditor.CoreWebView2.ExecuteScriptAsync(script).ContinueWith(t => { ReloadMarkdownContent(); });
             }
         }
 
@@ -275,6 +430,7 @@ namespace UsingMd
         }
 
         private void About_Click(object sender, RoutedEventArgs e) => MessageBox.Show("Markdown Editor\nVersion 1.0\nDeveloped by Kurizaki", "About");
+
         private CustomPopupPlacement[] PopupPlacementCallback(Size popupSize, Size targetSize, Point offset)
         {
             return new CustomPopupPlacement[]

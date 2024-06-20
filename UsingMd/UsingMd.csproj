@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="convert.js" />
+    <None Remove="editor.js" />
     <None Remove="initialContent.html" />
   </ItemGroup>
 
